@@ -30,7 +30,7 @@
           [:span.icon-bar]
           [:span.icon-bar]
           [:span.icon-bar]]
-         [:a.navbar-brand {:href "#/"} "tea-time"]]
+         [:a.navbar-brand {:href "#/"} "Tea Time"]]
         [:div.navbar-collapse.collapse
          (when-not @collapsed? {:class "in"})
          [:ul.nav.navbar-nav
@@ -41,12 +41,12 @@
   [:div.container
    [:div.row
     [:div.col-md-12
-     "this is the story of tea-time... work in progress"]]])
+     "this is the story of Tea Time... work in progress"]]])
 
 (defn home-page []
   [:div.container
    [:div.jumbotron
-    [:h1 "Welcome to tea-time"]
+    [:h1 "Welcome to Tea Time"]
     [:p "Time to start building your site!"]
     [:p [:a.btn.btn-primary.btn-lg {:href "http://luminusweb.net"} "Learn more »"]]]
    [:div.row
