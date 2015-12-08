@@ -1,19 +1,9 @@
 # tea-time
 
-FIXME
-
-## Prerequisites
-
-You will need [Leiningen][1] 2.0 or above installed.
-
-[1]: https://github.com/technomancy/leiningen
-
-## Running
-
-To start a web server for the application, run:
-
-    lein run
+A small app to deploY
 
 ## License
 
-Copyright © 2015 FIXME
+Licensed under the Eclipse Public License. vers. 1.0 
+
+Copyright © 2015 Brett Lyons
