@@ -35,32 +35,41 @@
          (when-not @collapsed? {:class "in"})
          [:ul.nav.navbar-nav
           [nav-link "#/" "Home" :home collapsed?]
+          [nav-link "#/special-page" "Special Page" :special-page collapsed?]
           [nav-link "#/about" "About" :about collapsed?]]]]])))
 
 (defn about-page []
   [:div.container
    [:div.row
     [:div.col-md-12
-     "this is the story of Tea Time... work in progress"]]])
+     "Tea Time is a simple web page to display tea, and tea ingredients"]]])
 
 (defn home-page []
   [:div.container
    [:div.jumbotron
     [:h1 "Welcome to Tea Time"]
-    [:p "Time to start building your site!"]
-    [:p [:a.btn.btn-primary.btn-lg {:href "http://luminusweb.net"} "Learn more »"]]]
+    ;; [:p "Time to start building your site!"]
+    ;; [:p [:a.btn.btn-primary.btn-lg {:href "http://luminusweb.net"} "Learn more »"]]
+    ]
    [:div.row
     [:div.col-md-12
-     [:h2 "Welcome to ClojureScript"]]]
+     [:h2 "Welcome to Tea Time"]]]
    (when-let [docs (session/get :docs)]
      [:div.row
       [:div.col-md-12
        [:div {:dangerouslySetInnerHTML
               {:__html (md->html docs)}}]]])])
 
+(defn special-page []
+  [:div.container
+   [:div.row
+    [:div.col-md-12
+     "Special page is special proof of concept"]]]) 
+
 (def pages
   {:home #'home-page
-   :about #'about-page})
+   :about #'about-page
+   :special-page #'special-page})
 
 (defn page []
   [(pages (session/get :page))])
@@ -74,6 +83,10 @@
 
 (secretary/defroute "/about" []
   (session/put! :page :about))
+
+(secretary/defroute "/special-page" []
+  (session/put! :page :special-page))
+ 
 
 ;; -------------------------
 ;; History
