@@ -1,6 +1,6 @@
 (defproject tea-time "0.1.0-SNAPSHOT"
 
-  :description "FIXME: write description"
+  :description "Tea-Time experimental CRUD app"
   :url "http://example.com/FIXME"
 
   :dependencies [[org.clojure/clojure "1.7.0"]
