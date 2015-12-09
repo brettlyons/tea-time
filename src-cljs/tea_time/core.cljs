@@ -60,11 +60,23 @@
        [:div {:dangerouslySetInnerHTML
               {:__html (md->html docs)}}]]])])
 
+(defn post-to-teas-db
+  "Sends an Ajax Request to the API route to post the tea from the form to the database"
+  [tea-name & other-params]
+  (println "post-to-teas-db hit, param: " (:params tea-name))
+  POST "/api/v1/newTea" {:params {:new-tea tea-name}})
+
 (defn special-page []
+  (let [tea-value (atom "New Tea")]
   [:div.container
    [:div.row
     [:div.col-md-12
-     "Special page is special proof of concept"]]]) 
+     "Special page is special proof of concept"]]
+   [:div.row
+    [:div.col-md-12
+     [:input.form-control {:field :text :id :tea}
+     [:input {:type "button" :value "Add Tea" :on-click post-to-teas-db}]]]]]) )
+
 
 (def pages
   {:home #'home-page
