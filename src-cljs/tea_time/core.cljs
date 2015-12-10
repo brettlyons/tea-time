@@ -5,7 +5,7 @@
             [goog.events :as events]
             [goog.history.EventType :as EventType]
             [markdown.core :refer [md->html]]
-            [ajax.core :refer [GET POST]])
+            [ajax.core :as ajax :refer [GET POST]])
   (:import goog.History))
 
 (defn nav-link [uri title page collapsed?]
@@ -60,23 +60,42 @@
        [:div {:dangerouslySetInnerHTML
               {:__html (md->html docs)}}]]])])
 
-(defn post-to-teas-db
-  "Sends an Ajax Request to the API route to post the tea from the form to the database"
-  [tea-name & other-params]
-  (println "post-to-teas-db hit, param: " (:params tea-name))
-  POST "/api/v1/newTea" {:params {:new-tea tea-name}})
+(defn tealister
+  "The page component for listing tea"
+  [teas]
+  (println tea)
+  [:ul
+   (for [tea teas]
+     ^{:key tea} [:li "Tea: " tea])])
+
+(defn handler [response]
+  (tealister response))
+
+(defn get-teas []
+  (ajax/GET "/api/teas"
+            {:headers {"Accept" "application/json"}
+             :handler handler}))
+
+;; (defn post-to-teas-db
+;;   "Sends an Ajax Request to the API route to post the tea from the form to the database"
+;;   [tea-name & other-params]
+;;   (println "post-to-teas-db hit, param: " (:params tea-name))
+;;   ajax/POST "/newtea" {:params {:new-tea tea-name} :format :json :handler handler})
+
 
 (defn special-page []
-  (let [tea-value (atom "New Tea")]
-  [:div.container
-   [:div.row
-    [:div.col-md-12
-     "Special page is special proof of concept"]]
-   [:div.row
-    [:div.col-md-12
-     [:input.form-control {:field :text :id :tea}
-     [:input {:type "button" :value "Add Tea" :on-click post-to-teas-db}]]]]]) )
+  (let [tea-value (reagent/atom "")]
+    [:div.container
+     [:div.row
+      [:div.col-md-12
+       "Special page holds things"]]
+     [:div.row
+      [:input {:type "button" :value "Retreive Tea List" :on-click get-teas}]]]))
 
+   ;; [:div.row
+   ;;  [:div.col-md-12
+   ;;   [:input.form-control {:field :text :id :tea}
+   ;; [:input {:type "button" :value "Add Tea" :on-click #(post-to-teas-db :tea)}]]]]]) )
 
 (def pages
   {:home #'home-page

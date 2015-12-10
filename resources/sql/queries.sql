@@ -19,3 +19,13 @@ WHERE id = :id
 -- delete a user given the id
 DELETE FROM users
 WHERE id = :id
+
+-- name: get-teas
+-- retrieve all of the teas from the db
+SELECT * FROM teas
+
+-- name: create-tea!
+-- put a new tea into the db
+INSERT INTO teas
+(id, name)
+VALUES (default, :tea-name)
