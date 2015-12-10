@@ -63,7 +63,7 @@
 (defn tealister
   "The page component for listing tea"
   [teas]
-  (println tea)
+  (println teas)
   [:ul
    (for [tea teas]
      ^{:key tea} [:li "Tea: " tea])])
