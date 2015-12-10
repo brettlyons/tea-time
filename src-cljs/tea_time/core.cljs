@@ -60,16 +60,22 @@
        [:div {:dangerouslySetInnerHTML
               {:__html (md->html docs)}}]]])])
 
+(def teas-list (atom nil))
+
 (defn tealister
   "The page component for listing tea"
-  [teas]
-  (println teas)
-  [:ul
-   (for [tea teas]
-     ^{:key tea} [:li "Tea: " tea])])
+  []
+  (let [get-teas (fn [] (ajax/GET "/api/teas" :handler (fn [response]
+                                                         (reset! teas-list (:body response)
+                                                                 (println teas-list)))))]
+    (get-teas)
+    (fn []
+      [:ul
+       (for [tea teas-list]
+         ^{:key tea} [:li "Tea: " (:name tea)])])))
 
 (defn handler [response]
-  (tealister response))
+  response)
 
 (defn get-teas []
   (ajax/GET "/api/teas"
@@ -90,7 +96,9 @@
       [:div.col-md-12
        "Special page holds things"]]
      [:div.row
-      [:input {:type "button" :value "Retreive Tea List" :on-click get-teas}]]]))
+      [tealister]
+      [:input {:type "button" :value "Retreive Tea List" :on-click get-teas}]
+      ]]))
 
    ;; [:div.row
    ;;  [:div.col-md-12
