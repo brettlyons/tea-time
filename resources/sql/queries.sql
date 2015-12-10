@@ -22,7 +22,7 @@ WHERE id = :id
 
 -- name: get-teas-name
 -- retrieve all of the teas from the db
-SELECT name FROM teas
+SELECT * FROM teas
 
 -- name: create-tea!
 -- put a new tea into the db

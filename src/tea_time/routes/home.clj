@@ -40,9 +40,9 @@
         :query-params []
         :summary "The list of teas from the db"
         (ok (db/get-teas-name)))
-  ;(POST "/newtea" (save-tea! request))
-  (POST "/api/newtea/:teaname" [teaname]
-        (println teaname)
-        (ok "Okay"))
+  (POST "/api/newtea" [] (fn [req]
+                           (println req)
+                           (ok "Okay"))
+        )
   (GET "/docs" [] (ok (-> "docs/docs.md" io/resource slurp))))
 
