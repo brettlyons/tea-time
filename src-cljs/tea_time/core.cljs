@@ -35,7 +35,7 @@
          (when-not @collapsed? {:class "in"})
          [:ul.nav.navbar-nav
           [nav-link "#/" "Home" :home collapsed?]
-          [nav-link "#/special-page" "Special Page" :special-page collapsed?]
+          [nav-link "#/list-page" "List Of Teas Page" :special-page collapsed?]
           [nav-link "#/about" "About" :about collapsed?]]]]])))
 
 (defn about-page []
@@ -66,56 +66,51 @@
   "The page component for listing tea"
   []
   (let [get-teas (fn [] (ajax/GET "/api/teas" :handler (fn [response]
-                                                         (reset! teas-list (:body response)
-                                                                 (println teas-list)))))]
+                                                         (reset! teas-list response)
+                                                         (println teas-list))))]
     (get-teas)
     (fn []
       [:ul
-       (for [tea teas-list]
-         ^{:key tea} [:li "Tea: " (:name tea)])])))
+       (for [tea @teas-list]
+         ^{:key tea} [:li "Tea: " (first tea)])])))
 
-(defn handler [response]
-  response)
+(defn post-to-teas-db
+  "Sends an Ajax Request to the API route to post the tea from the form to the database"
+  [tea-name & other-params]
+  (println "post-to-teas-db hit, param: " (:params tea-name))
+  ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json :handler (fn [] (println "New Tea Posted"))})
 
-(defn get-teas []
-  (ajax/GET "/api/teas"
-            {:headers {"Accept" "application/json"}
-             :handler handler}))
+(defn tea-adder
+  "A component for the tea-adder form"
+  []
+  [:div.row
+   [:div.col-md-12
+    [:input.form-control {:field :text :id :in-tea}
+     [:input {:type "submit" :value "Add Tea" :on-click #(post-to-teas-db :in-tea)}]]]])
 
-;; (defn post-to-teas-db
-;;   "Sends an Ajax Request to the API route to post the tea from the form to the database"
-;;   [tea-name & other-params]
-;;   (println "post-to-teas-db hit, param: " (:params tea-name))
-;;   ajax/POST "/newtea" {:params {:new-tea tea-name} :format :json :handler handler})
-
-
-(defn special-page []
+(defn list-page []
   (let [tea-value (reagent/atom "")]
     [:div.container
      [:div.row
       [:div.col-md-12
-       "Special page holds things"]]
+       "Tea list page list teas"]]
      [:div.row
-      [tealister]
-      [:input {:type "button" :value "Retreive Tea List" :on-click get-teas}]
-      ]]))
+      [tealister]]
+     [:div.row
+      [tea-adder]]]))
 
-   ;; [:div.row
-   ;;  [:div.col-md-12
-   ;;   [:input.form-control {:field :text :id :tea}
-   ;; [:input {:type "button" :value "Add Tea" :on-click #(post-to-teas-db :tea)}]]]]]) )
 
 (def pages
   {:home #'home-page
    :about #'about-page
-   :special-page #'special-page})
+   :list-page #'list-page})
 
 (defn page []
   [(pages (session/get :page))])
 
 ;; -------------------------
 ;; Routes
-(secretary/set-config! :prefix "#")
+;(secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
   (session/put! :page :home))
@@ -123,8 +118,8 @@
 (secretary/defroute "/about" []
   (session/put! :page :about))
 
-(secretary/defroute "/special-page" []
-  (session/put! :page :special-page))
+(secretary/defroute "/list-page" []
+  (session/put! :page :list-page))
  
 
 ;; -------------------------

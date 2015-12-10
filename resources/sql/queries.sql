@@ -20,9 +20,9 @@ WHERE id = :id
 DELETE FROM users
 WHERE id = :id
 
--- name: get-teas
+-- name: get-teas-name
 -- retrieve all of the teas from the db
-SELECT * FROM teas
+SELECT name FROM teas
 
 -- name: create-tea!
 -- put a new tea into the db

@@ -6,7 +6,7 @@
             [clojure.java.io :as io]))
 
 (defn home-page [& param]
-  (println db/get-teas)
+  ;(println db/get-teas)
   (layout/render "home.html"))
 
 ;; (defn tea-page []
@@ -36,11 +36,13 @@
 (defroutes home-routes
   (GET "/" req (home-page req))
   (GET "/api/teas" []
-        :return map
+        :return :json 
         :query-params []
         :summary "The list of teas from the db"
-        (ok (db/get-teas)))
+        (ok (db/get-teas-name)))
   ;(POST "/newtea" (save-tea! request))
-  (POST "/newtea" req (println req))
+  (POST "/api/newtea/:teaname" [teaname]
+        (println teaname)
+        (ok "Okay"))
   (GET "/docs" [] (ok (-> "docs/docs.md" io/resource slurp))))
 
