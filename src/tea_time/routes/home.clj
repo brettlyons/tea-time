@@ -35,6 +35,13 @@
 
 (defroutes home-routes
   (GET "/" req (home-page req))
+  (GET "/api/teas/:name/delete" [name]
+       :summary "Deletes the named tea"
+        (ok (db/delete-tea! {:name name})))
+  (GET "/api/teas/:id/update/:newname" [id newname]
+       (println id newname)
+       :summary "Updates the named tea"
+        (ok (db/update-tea! {:id (Integer/parseInt id) :newname newname})))
   (GET "/api/teas" []
         :return :json 
         :query-params []

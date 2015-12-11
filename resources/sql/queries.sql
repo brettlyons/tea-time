@@ -29,3 +29,14 @@ SELECT * FROM teas
 INSERT INTO teas
 (name)
 VALUES (:tea)
+
+--name: update-tea!
+-- update tea
+UPDATE teas
+SET name = :newname
+WHERE id = :id
+
+--name: delete-tea!
+-- remove a tea from the database
+DELETE FROM teas
+WHERE name = :name
