@@ -67,14 +67,30 @@
 (def edit-tea-snap (reagent/atom nil))
 (def show-edit (reagent/atom false))
 
-(defn get-teas [] (ajax/GET "/api/teas" :handler (fn [response] (reset! teas-list response))))
-(defn delete-tea [name] (ajax/GET (str "/api/teas/" name "/delete")
+(defn get-teas
+  "Gets the list of all teas from the website"
+  []
+  (ajax/GET "/api/teas" :handler (fn [response] (reset! teas-list response))))
+(defn delete-tea
+  "Sends a get request that deletes the tea argument"
+  [name]
+  (ajax/GET (str "/api/teas/" name "/delete")
                                   :error-handler (fn [response] (println "ERROR" response))
                                   :handler (fn [response] (println name " deleted") (get-teas) (reset! edit-tea-snap nil))))
 
-(defn update-tea [id newname] (ajax/GET (str "/api/teas/" id "/update/" newname)
+(defn update-tea
+  "Sends an update request to the API, which updates the tea in the db"
+  [id newname]
+  (ajax/GET (str "/api/teas/" id "/update/" newname)
                                           :error-handler (fn [response] (println "ERROR" response))
                                           :handler (fn [response] (println newname " updated") (get-teas) (reset! edit-tea nil))))
+(defn post-to-teas-db
+  "Sends an Ajax Request to the API route to post the tea from the form to the database"
+  [tea-name]
+  ;; (println "post-to-teas-db hit, params: " tea-name)
+  (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json
+                           :handler (fn [] (println "New Tea Posted") (get-teas) (reset! new-tea nil))
+                           :error-handler (fn [err] (println "New Tea Failed To Post" err))}))
 
 (defn show-edit-form 
   "show/hide the show-edit-form"
@@ -106,13 +122,6 @@
            [:td (second tea)]
            [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click #(show-edit-form (first tea) (second tea))}]]])]]]]))
 
-(defn post-to-teas-db
-  "Sends an Ajax Request to the API route to post the tea from the form to the database"
-  [tea-name]
-  ;; (println "post-to-teas-db hit, params: " tea-name)
-  (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json
-                           :handler (fn [] (println "New Tea Posted") (get-teas) (reset! new-tea nil))
-                           :error-handler (fn [err] (println "New Tea Failed To Post" err))}))
 
 (defn tea-adder
   "A component for the tea-adder form"
