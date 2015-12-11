@@ -70,7 +70,7 @@
 (defn get-teas [] (ajax/GET "/api/teas" :handler (fn [response] (reset! teas-list response))))
 (defn delete-tea [name] (ajax/GET (str "/api/teas/" name "/delete")
                                   :error-handler (fn [response] (println "ERROR" response))
-                                  :handler (fn [response] (println name " deleted") (get-teas))))
+                                  :handler (fn [response] (println name " deleted") (get-teas) (reset! edit-tea-snap nil))))
 
 (defn update-tea [id newname] (ajax/GET (str "/api/teas/" id "/update/" newname)
                                           :error-handler (fn [response] (println "ERROR" response))
@@ -120,7 +120,7 @@
   [:div.row
    [:div.col-md-12
     [:form {:post "/api/newtea"}
-     [:input.form-control {:field :text :id :in-tea :value @new-tea :on-change #(reset! new-tea (-> % .-target .-value))}
+     [:input.form-control {:field :text :id :in-tea :placeholder "Name of New Tea" :value @new-tea :on-change #(reset! new-tea (-> % .-target .-value))}
       [:input.btn.btn-primary {:type "submit" :value (str "Add " @new-tea) :on-click #(post-to-teas-db @new-tea)}]]]]])
 
 
@@ -131,6 +131,7 @@
    [:div.row
     [:div.col-md-12
      [:div.p (str "Preview: " (or @edit-tea-snap "*no tea selected*") " -> " (or @edit-tea "*no tea selected*"))]
+     [:div.p]
      [:form 
       [:input.form-control {:field :text :id :change-tea :value @edit-tea :on-change #(reset! edit-tea (-> % .-target .-value))}]
       [:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea @edit-tea-id @edit-tea)
@@ -163,10 +164,10 @@
 
 ;; -------------------------
 ;; Routes
-(secretary/set-config! :prefix nil)
+(secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
-  (session/put! :page :home))
+  (session/put! :page :list-page))
 
 (secretary/defroute "/about" []
   (session/put! :page :about))
