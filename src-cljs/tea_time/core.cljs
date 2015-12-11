@@ -64,6 +64,7 @@
 (def new-tea (atom nil))
 (def edit-tea-id (reagent/atom nil))
 (def edit-tea (reagent/atom nil))
+(def edit-tea-snap (reagent/atom nil))
 (def show-edit (reagent/atom false))
 
 (defn get-teas [] (ajax/GET "/api/teas" :handler (fn [response] (reset! teas-list response))))
@@ -81,6 +82,7 @@
   (println "show-edit-form" id "||" name "||" show-edit "||" @show-edit)
   (reset! edit-tea-id (second id))
   (reset! edit-tea (second name))
+  (reset! edit-tea-snap (second name))
   (swap! show-edit not))
 
 (defn tealister
@@ -102,7 +104,7 @@
           [:tr
            [:td [:li]]
            [:td (second tea)]
-           [:td [:input {:type "button" :value "Edit" :on-click #(show-edit-form (first tea) (second tea))}]]])]]]]))
+           [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click #(show-edit-form (first tea) (second tea))}]]])]]]]))
 
 (defn post-to-teas-db
   "Sends an Ajax Request to the API route to post the tea from the form to the database"
@@ -119,7 +121,7 @@
    [:div.col-md-12
     [:form {:post "/api/newtea"}
      [:input.form-control {:field :text :id :in-tea :value @new-tea :on-change #(reset! new-tea (-> % .-target .-value))}
-      [:input {:type "submit" :value "Add Tea" :on-click #(post-to-teas-db @new-tea)}]]]]])
+      [:input.btn.btn-primary {:type "submit" :value (str "Add " @new-tea) :on-click #(post-to-teas-db @new-tea)}]]]]])
 
 
 (defn tea-edit
@@ -128,10 +130,13 @@
   [:div.form-group 
    [:div.row
     [:div.col-md-12
+     [:div.p (str "Preview: " (or @edit-tea-snap "*no tea selected*") " -> " (or @edit-tea "*no tea selected*"))]
      [:form 
       [:input.form-control {:field :text :id :change-tea :value @edit-tea :on-change #(reset! edit-tea (-> % .-target .-value))}]
-      [:input {:type "submit" :value "Update Tea Name" :on-click #(update-tea @edit-tea-id @edit-tea)}]]
-     [:input {:type "button" :value "Delete this tea" :on-click #(delete-tea @edit-tea)}]]]])
+      [:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea @edit-tea-id @edit-tea)
+                                                                                (reset! edit-tea nil)
+                                                                                (reset! edit-tea-snap nil))}]]
+     [:input.btn.btn-danger {:type "button" :value (str "Delete " @edit-tea-snap) :on-click #(delete-tea @edit-tea)}]]]])
 
 ;; this passes the value of the new tea atom into the post-to-teas-db function
 
