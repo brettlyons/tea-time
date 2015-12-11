@@ -27,5 +27,5 @@ SELECT * FROM teas
 -- name: create-tea!
 -- put a new tea into the db
 INSERT INTO teas
-(id, name)
-VALUES (default, :tea-name)
+(name)
+VALUES (:tea)

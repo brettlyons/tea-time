@@ -62,31 +62,37 @@
 
 (def teas-list (atom nil))
 (def new-tea (atom nil))
+(defn get-teas [] (ajax/GET "/api/teas" :handler (fn [response] (reset! teas-list response))))
+
+
+(defn show-edit-form 
+  "show/hide the show-edit-form"
+  [& eventObj id]
+  (println "show-edit-form" eventObj "||" (first id) "||" (.value id)))
 
 (defn tealister
   "The page component for listing tea"
   []
-  (let [get-teas (fn [] (ajax/GET "/api/teas" :handler (fn [response]
-                                                         (reset! teas-list response))))]
-    (get-teas)
-    (fn []
-      [:div.row
-       [:table.table.table-striped
-        [:thead
-         [:tr
-          [:th "Tea #"]
-          [:th.pull-right "Tea Name"]]]
-        [:tbody
-         (for [tea @teas-list]
-           ^{:key tea}
-           [:tr [:td (first tea)] [:td.pull-right (second tea)]])]]])))
+  (get-teas)
+  (fn []
+    [:div.row
+     [:table.table.table-striped
+      [:thead
+       [:tr
+        [:th "Tea #"]
+        [:th "Tea Name"]
+        [:th "Edit"]]]
+      [:tbody
+       (for [tea @teas-list]
+         ^{:key tea}
+         [:tr [:td (first tea)] [:td (second tea)] [:td [:input {:type "button" :value "Edit" :on-click show-edit-form}]]])]]]))
 
 (defn post-to-teas-db
-  "Sends an Ajax Request to the API route to post the tea from the form to the database DOES NOT RECIEVE FIELD CURRENTLY"
-  [tea-name & other-params]
-  (println "post-to-teas-db hit, params: " tea-name)
+  "Sends an Ajax Request to the API route to post the tea from the form to the database"
+  [tea-name]
+  ;; (println "post-to-teas-db hit, params: " tea-name)
   (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json
-                           :handler (fn [] (println "New Tea Posted"))
+                           :handler (fn [] (println "New Tea Posted") (get-teas))
                            :error-handler (fn [err] (println "New Tea Failed To Post" err))}))
 
 (defn tea-adder

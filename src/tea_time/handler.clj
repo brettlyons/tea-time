@@ -40,8 +40,9 @@
 
 (def app-routes
   (routes
-    (wrap-routes #'home-routes middleware/wrap-csrf)
-    (route/not-found
+    ;(wrap-routes #'home-routes middleware/wrap-csrf)
+   (wrap-routes #'home-routes middleware/wrap-base)
+   (route/not-found
       (:body
         (error-page {:status 404
                      :title "page not found"})))))

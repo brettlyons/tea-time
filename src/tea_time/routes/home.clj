@@ -41,8 +41,9 @@
         :summary "The list of teas from the db"
         (ok (db/get-teas-name)))
   (POST "/api/newtea" [] (fn [req]
-                           (println req)
-                           (ok "Okay"))
-        )
+                           (db/create-tea! {:tea (get (:params req) :new-tea)})
+                           ;; (println (get (:params req) :new-tea))
+                           (ok "Tea Added")))
+
   (GET "/docs" [] (ok (-> "docs/docs.md" io/resource slurp))))
 
