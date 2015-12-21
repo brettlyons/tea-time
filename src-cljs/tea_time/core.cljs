@@ -47,10 +47,7 @@
 (defn home-page []
   [:div.container
    [:div.jumbotron
-    [:h1 "Welcome to Tea Time"]
-    ;; [:p "Time to start building your site!"]
-    ;; [:p [:a.btn.btn-primary.btn-lg {:href "http://luminusweb.net"} "Learn more »"]]
-    ]
+    [:h1 "Welcome to Tea Time"]]
    [:div.row
     [:div.col-md-12
      [:h2 "Welcome to Tea Time"]]]
