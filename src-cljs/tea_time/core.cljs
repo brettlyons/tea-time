@@ -8,13 +8,6 @@
             [ajax.core :as ajax :refer [GET POST]])
   (:import goog.History))
 
-;; MODEL
-
-(def app-state {:teas-list (reagent/atom nil) :new-tea (reagent/atom nil) :edit-tea-id (reagent/atom nil)
-                :edit-tea (reagent/atom nil) :edit-tea-snap (reagent/atom nil) :show-edit (reagent/atom false)})
-
-;; VIEW
-
 (defn nav-link [uri title page collapsed?]
   [:li {:class (when (= page (session/get :page)) "active")}
    [:a {:href uri
@@ -64,7 +57,46 @@
        [:div {:dangerouslySetInnerHTML
               {:__html (md->html docs)}}]]])])
 
+(def teas-list (atom nil))
+(def new-tea (atom nil))
+(def edit-tea-id (reagent/atom nil))
+(def edit-tea (reagent/atom nil))
+(def edit-tea-snap (reagent/atom nil))
+(def show-edit (reagent/atom false))
 
+(defn get-teas
+  "Gets the list of all teas from the website"
+  []
+  (ajax/GET "/api/teas" :handler (fn [response] (reset! teas-list response))))
+(defn delete-tea
+  "Sends a get request that deletes the tea argument"
+  [name]
+  (ajax/GET (str "/api/teas/" name "/delete")
+                                  :error-handler (fn [response] (println "ERROR" response))
+                                  :handler (fn [response] (println name " deleted") (get-teas) (reset! edit-tea-snap nil))))
+
+(defn update-tea
+  "Sends an update request to the API, which updates the tea in the db"
+  [id newname]
+  (ajax/GET (str "/api/teas/" id "/update/" newname)
+                                          :error-handler (fn [response] (println "ERROR" response))
+                                          :handler (fn [response] (println newname " updated") (get-teas) (reset! edit-tea nil))))
+(defn post-to-teas-db
+  "Sends an Ajax Request to the API route to post the tea from the form to the database"
+  [tea-name]
+  ;; (println "post-to-teas-db hit, params: " tea-name)
+  (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json
+                           :handler (fn [] (println "New Tea Posted") (get-teas) (reset! new-tea nil))
+                           :error-handler (fn [err] (println "New Tea Failed To Post" err))}))
+
+(defn show-edit-form 
+  "show/hide the show-edit-form"
+  [id name]
+  (println "show-edit-form" id "||" name "||" show-edit "||" @show-edit)
+  (reset! edit-tea-id (second id))
+  (reset! edit-tea (second name))
+  (reset! edit-tea-snap (second name))
+  (swap! show-edit not))
 
 (defn tealister
   "The page component for listing tea"
@@ -85,7 +117,7 @@
           [:tr
            [:td [:li]]
            [:td (second tea)]
-           [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click #(reset-app-state (first tea) (second tea))}]]])]]]]))
+           [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click #(show-edit-form (first tea) (second tea))}]]])]]]]))
 
 
 (defn tea-adder
@@ -94,26 +126,24 @@
   [:div.row
    [:div.col-md-12
     [:form {:post "/api/newtea"}
-     [:input.form-control {:field :text :id :in-tea :placeholder "Name of New Tea" :value @(:new-tea app-state) :on-change #(reset! (:new-tea app-state) (-> % .-target .-value))}
-      [:input.btn.btn-primary {:type "submit" :value (str "Add " @(:new-tea app-state)) :on-click #(post-to-teas-db @(:new-tea app-state))}]]]]])
+     [:input.form-control {:field :text :id :in-tea :placeholder "Name of New Tea" :value @new-tea :on-change #(reset! new-tea (-> % .-target .-value))}
+      [:input.btn.btn-primary {:type "submit" :value (str "Add " @new-tea) :on-click #(post-to-teas-db @new-tea)}]]]]])
 
-  
+
 (defn tea-edit
   "The component of the form"
   []
   [:div.form-group 
    [:div.row
     [:div.col-md-12
-     [:div.p (str "Preview: " (or @(:edit-tea-snap app-state) "*no tea selected*") " -> " (or @(:edit-tea app-state) "*no tea selected*"))]
+     [:div.p (str "Preview: " (or @edit-tea-snap "*no tea selected*") " -> " (or @edit-tea "*no tea selected*"))]
      [:div.p]
      [:form 
-      [:input.form-control {:field :text :id :change-tea :value @(:edit-tea app-state) :on-change #(reset! (:edit-tea app-state) (-> % .-target .-value))}]
-      [:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea
-                                                                                 @(:edit-tea-id app-state)
-                                                                                 @(:edit-tea app-state))
-                                                                                (reset! (:edit-tea app-state) nil)
-                                                                                (reset! (:edit-tea-snap app-state) nil))}]]
-     [:input.btn.btn-danger {:type "button" :value (str "Delete " @(:edit-tea-snap app-state)) :on-click #(delete-tea @(:edit-tea app-state))}]]]])
+      [:input.form-control {:field :text :id :change-tea :value @edit-tea :on-change #(reset! edit-tea (-> % .-target .-value))}]
+      [:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea @edit-tea-id @edit-tea)
+                                                                                (reset! edit-tea nil)
+                                                                                (reset! edit-tea-snap nil))}]]
+     [:input.btn.btn-danger {:type "button" :value (str "Delete " @edit-tea-snap) :on-click #(delete-tea @edit-tea)}]]]])
 
 ;; this passes the value of the new tea atom into the post-to-teas-db function
 
@@ -137,45 +167,6 @@
 
 (defn page []
   [(pages (session/get :page))])
-
-; UPDATE
-
-(defn get-teas
-  "Gets the list of all teas from the website"
-  []
-  (ajax/GET "/api/teas" :handler (fn [response] (reset! (:teas-list app-state) response))))
-
-(defn delete-tea
-  "Sends a get request that deletes the tea argument"
-  [name]
-  (ajax/GET (str "/api/teas/" name "/delete")
-                                  :error-handler (fn [response] (println "ERROR" response))
-                                  :handler (fn [response] (println name " deleted") (get-teas) (reset! (:edit-tea-snap app-state) nil))))
-
-
-(defn update-tea
-  "Sends an update request to the API, which updates the tea in the db"
-  [id newname]
-  (ajax/GET (str "/api/teas/" id "/update/" newname)
-                                          :error-handler (fn [response] (println "ERROR" response))
-                                          :handler (fn [response] (println newname " updated") (get-teas) (reset! (:edit-tea app-state) nil))))
-(defn post-to-teas-db
-  "Sends an Ajax Request to the API route to post the tea from the form to the database"
-  [tea-name]
-  ;; (println "post-to-teas-db hit, params: " tea-name)
-  (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json
-                           :handler (fn [] (println "New Tea Posted") (get-teas) (reset! (:new-tea app-state) nil))
-                           :error-handler (fn [err] (println "New Tea Failed To Post" err))}))
-
-(defn reset-app-state 
-  "Reset app-state"
-  [id name]
-  (println "reset-app-state" id "||" name "||" show-edit "||" @show-edit)
-  (reset! (:edit-tea-id app-state) (second id))
-  (reset! (:edit-tea app-state) (second name))
-  (reset! (:edit-tea-snap app-state) (second name))
-  (swap! (:show-edit app-state) not))
-
 
 ;; -------------------------
 ;; Routes
