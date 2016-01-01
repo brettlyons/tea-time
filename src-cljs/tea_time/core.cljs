@@ -57,8 +57,8 @@
        [:div {:dangerouslySetInnerHTML
               {:__html (md->html docs)}}]]])])
 
-(def teas-list (atom nil))
-(def new-tea (atom nil))
+(def teas-list (reagent/atom nil))
+(def new-tea (reagent/atom nil))
 (def edit-tea-id (reagent/atom nil))
 (def edit-tea (reagent/atom nil))
 (def edit-tea-snap (reagent/atom nil))
