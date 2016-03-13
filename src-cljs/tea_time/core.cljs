@@ -89,7 +89,7 @@
                            :handler (fn [] (println "New Tea Posted") (get-teas) (reset! new-tea nil))
                            :error-handler (fn [err] (println "New Tea Failed To Post" err))}))
 
-(defn show-edit-form 
+(defn show-edit-form
   "show/hide the show-edit-form"
   [id name]
   (println "show-edit-form" id "||" name "||" show-edit "||" @show-edit)
@@ -133,12 +133,12 @@
 (defn tea-edit
   "The component of the form"
   []
-  [:div.form-group 
+  [:div.form-group
    [:div.row
     [:div.col-md-12
      [:div.p (str "Preview: " (or @edit-tea-snap "*no tea selected*") " -> " (or @edit-tea "*no tea selected*"))]
      [:div.p]
-     [:form 
+     [:form
       [:input.form-control {:field :text :id :change-tea :value @edit-tea :on-change #(reset! edit-tea (-> % .-target .-value))}]
       [:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea @edit-tea-id @edit-tea)
                                                                                 (reset! edit-tea nil)
@@ -148,7 +148,7 @@
 ;; this passes the value of the new tea atom into the post-to-teas-db function
 
 (defn list-page []
-    [:div.container 
+    [:div.container
      [:div.row
       [:div.col-md-12
        "Here is a list of teas"]]
@@ -180,7 +180,7 @@
 
 (secretary/defroute "/list-page" []
   (session/put! :page :list-page))
- 
+
 
 ;; -------------------------
 ;; History
