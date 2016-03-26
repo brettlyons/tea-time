@@ -8,11 +8,13 @@
             [ajax.core :as ajax :refer [GET POST]])
   (:import goog.History))
 
+
 (defn nav-link [uri title page collapsed?]
   [:li {:class (when (= page (session/get :page)) "active")}
    [:a {:href uri
         :on-click #(reset! collapsed? true)}
     title]])
+
 
 (defn navbar []
   (let [collapsed? (atom true)]
@@ -38,11 +40,13 @@
           [nav-link "#/list-page" "List Of Teas Page" :special-page collapsed?]
           [nav-link "#/about" "About" :about collapsed?]]]]])))
 
+
 (defn about-page []
   [:div.container
    [:div.row
     [:div.col-md-12
      "Tea Time is a simple web page to display tea, and tea ingredients"]]])
+
 
 (defn home-page []
   [:div.container
@@ -57,6 +61,7 @@
        [:div {:dangerouslySetInnerHTML
               {:__html (md->html docs)}}]]])])
 
+
 (def teas-list (reagent/atom nil))
 (def new-tea (reagent/atom nil))
 (def edit-tea-id (reagent/atom nil))
@@ -64,30 +69,34 @@
 (def edit-tea-snap (reagent/atom nil))
 (def show-edit (reagent/atom false))
 
+
 (defn get-teas
   "Gets the list of all teas from the website"
   []
   (ajax/GET "/api/teas" :handler (fn [response] (reset! teas-list response))))
+
 (defn delete-tea
   "Sends a get request that deletes the tea argument"
   [name]
-  (ajax/GET (str "/api/teas/" name "/delete")
+  (ajax/GET (str "/api/teas/" name "/delete"
                                   :error-handler (fn [response] (println "ERROR" response))
-                                  :handler (fn [response] (println name " deleted") (get-teas) (reset! edit-tea-snap nil))))
+                                  :handler (fn [response] (println name " deleted") (get-teas) (reset! edit-tea-snap nil)))))
+
 
 (defn update-tea
   "Sends an update request to the API, which updates the tea in the db"
   [id newname]
-  (ajax/GET (str "/api/teas/" id "/update/" newname)
+  (ajax/GET (str "/api/teas/" id "/update/" newname
                                           :error-handler (fn [response] (println "ERROR" response))
-                                          :handler (fn [response] (println newname " updated") (get-teas) (reset! edit-tea nil))))
+                                          :handler (fn [response] (println newname " updated") (get-teas) (reset! edit-tea nil)))))
 (defn post-to-teas-db
   "Sends an Ajax Request to the API route to post the tea from the form to the database"
   [tea-name]
   ;; (println "post-to-teas-db hit, params: " tea-name)
-  (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json
+  (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json}
                            :handler (fn [] (println "New Tea Posted") (get-teas) (reset! new-tea nil))
-                           :error-handler (fn [err] (println "New Tea Failed To Post" err))}))
+                           :error-handler (fn [err] (println "New Tea Failed To Post" err))))
+
 
 (defn show-edit-form
   "show/hide the show-edit-form"
@@ -97,6 +106,7 @@
   (reset! edit-tea (second name))
   (reset! edit-tea-snap (second name))
   (swap! show-edit not))
+
 
 (defn tealister
   "The page component for listing tea"
