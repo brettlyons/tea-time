@@ -78,24 +78,24 @@
 (defn delete-tea
   "Sends a get request that deletes the tea argument"
   [name]
-  (ajax/GET (str "/api/teas/" name "/delete"
-                                  :error-handler (fn [response] (println "ERROR" response))
-                                  :handler (fn [response] (println name " deleted") (get-teas) (reset! edit-tea-snap nil)))))
-
+  (ajax/GET (str "/api/teas/" name "/delete")
+            :error-handler (fn [response] (println "DELETE-TEA ERROR" response))
+            :handler (fn [response] (println name " deleted") (get-teas) (reset! edit-tea-snap nil))))
 
 (defn update-tea
   "Sends an update request to the API, which updates the tea in the db"
   [id newname]
-  (ajax/GET (str "/api/teas/" id "/update/" newname
-                                          :error-handler (fn [response] (println "ERROR" response))
-                                          :handler (fn [response] (println newname " updated") (get-teas) (reset! edit-tea nil)))))
+  (ajax/GET (str "/api/teas/" id "/update/" newname)
+            :error-handler (fn [response] (println "UPDATE-TEA ERROR" response))
+            :handler (fn [response] (println newname " updated") (get-teas) (reset! edit-tea nil))))
+
 (defn post-to-teas-db
   "Sends an Ajax Request to the API route to post the tea from the form to the database"
   [tea-name]
   ;; (println "post-to-teas-db hit, params: " tea-name)
   (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json}
-                           :handler (fn [] (println "New Tea Posted") (get-teas) (reset! new-tea nil))
-                           :error-handler (fn [err] (println "New Tea Failed To Post" err))))
+             :handler (fn [] (println "New Tea Posted") (get-teas) (reset! new-tea nil))
+             :error-handler (fn [err] (println "New Tea Failed To Post" err))))
 
 
 (defn show-edit-form
@@ -141,7 +141,7 @@
 
 
 (defn tea-edit
-  "The component of the form"
+  "The form component"
   []
   [:div.form-group
    [:div.row
@@ -205,14 +205,14 @@
 
 ;; -------------------------
 ;; Initialize app
-(defn fetch-docs! []
-  (GET (str js/context "/docs") {:handler #(session/put! :docs %)}))
+;; (defn fetch-docs! []
+;;   (GET (str js/context "/docs") {:handler #(session/put! :docs %)}))
 
 (defn mount-components []
   (reagent/render [#'navbar] (.getElementById js/document "navbar"))
   (reagent/render [#'page] (.getElementById js/document "app")))
 
 (defn init! []
-  (fetch-docs!)
+  ;; (fetch-docs!)
   (hook-browser-navigation!)
   (mount-components))

@@ -29,6 +29,7 @@
                  [reagent-forms "0.5.13"]
                  [reagent-utils "0.1.5"]
                  [secretary "1.2.3"]
+                 [re-frame "0.7.0"]
                  [org.clojure/core.async "0.2.374"]
                  [cljs-ajax "0.5.1"]
                  [org.immutant/web "2.1.1" :exclusions [ch.qos.logback/logback-classic]]]
