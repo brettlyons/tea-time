@@ -5,7 +5,9 @@
             [goog.events :as events]
             [goog.history.EventType :as EventType]
             [markdown.core :refer [md->html]]
-            [ajax.core :as ajax :refer [GET POST]])
+            [ajax.core :as ajax :refer [GET POST]]
+            [re-frame.core :as re-frame])
+  (:require-macros [reagent.ratom :refer [reaction]])
   (:import goog.History))
 
 
