@@ -71,6 +71,9 @@
 (def edit-tea-snap (reagent/atom nil))
 (def show-edit (reagent/atom false))
 
+(def app-db (reagent/atom {
+                           :teas-list nil
+                           :new-tea nil}))
 
 (defn get-teas
   "Gets the list of all teas from the website"
@@ -100,14 +103,13 @@
              :error-handler (fn [err] (println "New Tea Failed To Post" err))))
 
 
-(defn show-edit-form
+(defn update-edit-form
   "show/hide the show-edit-form"
   [id name]
-  (println "show-edit-form" id "||" name "||" show-edit "||" @show-edit)
+  (println "update-edit-form" id "||" name "||" show-edit "||" @show-edit)
   (reset! edit-tea-id (second id))
   (reset! edit-tea (second name))
-  (reset! edit-tea-snap (second name))
-  (swap! show-edit not))
+  (reset! edit-tea-snap (second name)))
 
 
 (defn tealister
@@ -129,33 +131,48 @@
           [:tr
            [:td [:li]]
            [:td (second tea)]
-           [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click #(show-edit-form (first tea) (second tea))}]]])]]]]))
+           [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (first tea) (second tea)))}]]])]]]]))
 
+(defn sync-atom-to-event
+  [atom target-value]
+    (reset! atom (->
+                  target-value
+                  .-target
+                  .-value)))
+
+(def sync-new-tea (partial sync-atom-to-event new-tea))
+(def sync-edit-tea (partial sync-atom-to-event edit-tea))
 
 (defn tea-adder
   "A component for the tea-adder form"
   []
-  [:div.row
-   [:div.col-md-12
-    [:form {:post "/api/newtea"}
-     [:input.form-control {:field :text :id :in-tea :placeholder "Name of New Tea" :value @new-tea :on-change #(reset! new-tea (-> % .-target .-value))}
-      [:input.btn.btn-primary {:type "submit" :value (str "Add " @new-tea) :on-click #(post-to-teas-db @new-tea)}]]]]])
+  (fn [] 
+    [:div.row
+     [:div.col-md-12
+      [:form {:post "/api/newtea"}
+       [:input.form-control {:field :text :id :in-tea :placeholder "Name of New Tea" :value @new-tea :on-change sync-new-tea }
+        [:input.btn.btn-primary {:type "submit" :value (str "Add " @new-tea) :on-click #(post-to-teas-db @new-tea)}]]]]]))
+
 
 
 (defn tea-edit
-  "The form component"
+  "The edit/delete form component"
   []
-  [:div.form-group
-   [:div.row
-    [:div.col-md-12
-     [:div.p (str "Preview: " (or @edit-tea-snap "*no tea selected*") " -> " (or @edit-tea "*no tea selected*"))]
-     [:div.p]
-     [:form
-      [:input.form-control {:field :text :id :change-tea :value @edit-tea :on-change #(reset! edit-tea (-> % .-target .-value))}]
-      [:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea @edit-tea-id @edit-tea)
-                                                                                (reset! edit-tea nil)
-                                                                                (reset! edit-tea-snap nil))}]]
-     [:input.btn.btn-danger {:type "button" :value (str "Delete " @edit-tea-snap) :on-click #(delete-tea @edit-tea)}]]]])
+  (fn [] 
+    [:div.form-group
+     [:div.row
+      [:div.col-md-12
+       [:button.btn.btn-info {:on-click (fn [_] (swap! show-edit not))} "Show/Hide edit form"]
+       [:div.p (str "Preview: " (or @edit-tea-snap "*no tea selected*") " -> " (or @edit-tea "*no tea selected*"))]
+       [:div.p]
+       [:form {:style {:visibility (if @show-edit
+                                     "visible"
+                                     "hidden")}}
+        [:input.form-control {:field :text :id :change-tea :value @edit-tea :on-change sync-edit-tea }]
+        [:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea @edit-tea-id @edit-tea)
+                                                                                  (reset! edit-tea nil)
+                                                                                  (reset! edit-tea-snap nil))}]]
+       [:input.btn.btn-danger {:type "button" :value (str "Delete " @edit-tea-snap) :on-click #(delete-tea @edit-tea)}]]]]))
 
 ;; this passes the value of the new tea atom into the post-to-teas-db function
 

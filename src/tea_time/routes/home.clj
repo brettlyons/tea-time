@@ -40,7 +40,7 @@
        (db/delete-tea! {:name name})
        (ok (str name " Tea Deleted")))
   (GET "/api/teas/:id/update/:newname" [id newname]
-       (println id newname)
+       ;; (println id newname)
        :summary "Updates the named tea"
        (db/update-tea! {:id (Integer/parseInt id) :newname newname})
        (ok (str newname " modified")))
