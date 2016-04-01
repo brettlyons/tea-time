@@ -71,9 +71,12 @@
 (def edit-tea-snap (reagent/atom nil))
 (def show-edit (reagent/atom false))
 
-(def app-db (reagent/atom {
-                           :teas-list nil
-                           :new-tea nil}))
+(def app-db (reagent/atom {:teas-list nil
+                           :new-tea nil
+                           :edit-tea-id nil
+                           :edit-tea nil
+                           :edit-tea-snap nil
+                           :show-edit false}))
 
 (defn get-teas
   "Gets the list of all teas from the website"
@@ -126,12 +129,12 @@
          [:th "Tea Name"]
          [:th "Edit"]]]
        [:tbody
-        (for [tea @teas-list]
-          ^{:key tea}
-          [:tr
-           [:td [:li]]
-           [:td (second tea)]
-           [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (first tea) (second tea)))}]]])]]]]))
+        (map (fn [tea] [tea @teas-list]
+               ^{:key tea}
+               [:tr
+                [:td [:li]]
+                [:td (second tea)]
+                [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (first tea) (second tea)))}]]]) @teas-list)]]]]))
 
 (defn sync-atom-to-event
   [atom target-value]
