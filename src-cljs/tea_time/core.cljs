@@ -118,8 +118,8 @@
 (defn tealister
   "The page component for listing tea"
   []
-  (get-teas)
   (fn []
+    (get-teas)
     [:div.row
      [:ul
       [:table.table.table-striped
