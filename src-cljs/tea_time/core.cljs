@@ -138,10 +138,10 @@
 
 (defn sync-atom-to-event
   [atom target-value]
-    (reset! atom (->
-                  target-value
-                  .-target
-                  .-value)))
+  (reset! atom (->
+                 target-value
+                 .-target
+                 .-value)))
 
 (def sync-new-tea (partial sync-atom-to-event new-tea))
 (def sync-edit-tea (partial sync-atom-to-event edit-tea))
@@ -149,7 +149,7 @@
 (defn tea-adder
   "A component for the tea-adder form"
   []
-  (fn [] 
+  (fn []
     [:div.row
      [:div.col-md-12
       [:form {:post "/api/newtea"}
@@ -161,7 +161,7 @@
 (defn tea-edit
   "The edit/delete form component"
   []
-  (fn [] 
+  (fn []
     [:div.form-group
      [:div.row
       [:div.col-md-12
@@ -180,16 +180,16 @@
 ;; this passes the value of the new tea atom into the post-to-teas-db function
 
 (defn list-page []
-    [:div.container
-     [:div.row
-      [:div.col-md-12
-       "Here is a list of teas"]]
-     [:div.row {:style {:display "flex" :align-items "flex-end"}}
-      [:div.col-md-6
-       [tealister]]
-      [:div.col-md-6
-       [tea-edit]
-       [tea-adder]]]])
+  [:div.container
+   [:div.row
+    [:div.col-md-12
+     "Here is a list of teas"]]
+   [:div.row {:style {:display "flex" :align-items "flex-end"}}
+    [:div.col-md-6
+     [tealister]]
+    [:div.col-md-6
+     [tea-edit]
+     [tea-adder]]]])
 
 
 (def pages
@@ -219,11 +219,11 @@
 ;; must be called after routes have been defined
 (defn hook-browser-navigation! []
   (doto (History.)
-        (events/listen
-          EventType/NAVIGATE
-          (fn [event]
-              (secretary/dispatch! (.-token event))))
-        (.setEnabled true)))
+    (events/listen
+      EventType/NAVIGATE
+      (fn [event]
+        (secretary/dispatch! (.-token event))))
+    (.setEnabled true)))
 
 ;; -------------------------
 ;; Initialize app
