@@ -64,7 +64,7 @@
               {:__html (md->html docs)}}]]])])
 
 
-(def teas-list (reagent/atom nil))
+;; (def teas-list (reagent/atom nil))
 (def new-tea (reagent/atom nil))
 (def edit-tea-id (reagent/atom nil))
 (def edit-tea (reagent/atom nil))
@@ -81,8 +81,9 @@
 (defn get-teas
   "Gets the list of all teas from the website"
   []
-  (ajax/GET "/api/teas" :handler (fn [response] (reset! teas-list response))))
+  (ajax/GET "/api/teas" :handler (fn [response] (println (assoc-in app-db [:teas-list] response)))))
 
+ ;;(reset! app-db (assoc-in app-db [:teas-list] response))
 (defn delete-tea
   "Sends a get request that deletes the tea argument"
   [name]
@@ -119,7 +120,6 @@
   "The page component for listing tea"
   []
   (fn []
-    (get-teas)
     [:div.row
      [:ul
       [:table.table.table-striped
@@ -129,19 +129,19 @@
          [:th "Tea Name"]
          [:th "Edit"]]]
        [:tbody
-        (map (fn [tea] [tea @teas-list]
+        (map (fn [tea] ;[tea @teas-list]
                ^{:key tea}
                [:tr
                 [:td [:li]]
                 [:td (second tea)]
-                [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (first tea) (second tea)))}]]]) @teas-list)]]]]))
+                [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (first tea) (second tea)))}]]]) (:teas-list @app-db))]]]]))
 
 (defn sync-atom-to-event
-  [atom target-value]
-  (reset! atom (->
-                 target-value
-                 .-target
-                 .-value)))
+  [the-atom target-value]
+  (reset! the-atom (->
+                    target-value
+                    .-target
+                    .-value)))
 
 (def sync-new-tea (partial sync-atom-to-event new-tea))
 (def sync-edit-tea (partial sync-atom-to-event edit-tea))
@@ -236,5 +236,6 @@
 
 (defn init! []
   ;; (fetch-docs!)
+  (get-teas)
   (hook-browser-navigation!)
   (mount-components))
