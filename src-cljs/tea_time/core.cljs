@@ -81,7 +81,7 @@
 (defn get-teas
   "Gets the list of all teas from the website"
   []
-  (ajax/GET "/api/teas" :handler (fn [response] (println (assoc-in app-db [:teas-list] response)))))
+  (ajax/GET "/api/teas" :handler (fn [response] (reset! app-db (assoc-in @app-db [:teas-list] response)))))
 
  ;;(reset! app-db (assoc-in app-db [:teas-list] response))
 (defn delete-tea
