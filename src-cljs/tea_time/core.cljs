@@ -71,12 +71,12 @@
 (def edit-tea-snap (reagent/atom nil))
 (def show-edit (reagent/atom false))
 
-(def app-db (reagent/atom {:teas-list nil
+(defonce app-db (reagent/atom {:teas-list nil}
                            :new-tea nil
                            :edit-tea-id nil
                            :edit-tea nil
                            :edit-tea-snap nil
-                           :show-edit false}))
+                           :show-edit false))
 
 (defn get-teas
   "Gets the list of all teas from the website"
@@ -120,6 +120,7 @@
   "The page component for listing tea"
   []
   (fn []
+    (get-teas)
     [:div.row
      [:ul
       [:table.table.table-striped
