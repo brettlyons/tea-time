@@ -71,12 +71,7 @@
 (def edit-tea-snap (reagent/atom nil))
 (def show-edit (reagent/atom false))
 
-(defonce app-db (reagent/atom {:teas-list nil}
-                           :new-tea nil
-                           :edit-tea-id nil
-                           :edit-tea nil
-                           :edit-tea-snap nil
-                           :show-edit false))
+(defonce app-db (reagent/atom {}))
 
 (defn get-teas
   "Gets the list of all teas from the website"
