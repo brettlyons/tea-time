@@ -65,11 +65,43 @@
 
 
 ;; (def teas-list (reagent/atom nil))
-;; (def new-tea (reagent/atom nil))
+(def new-tea (reagent/atom nil))
 (def edit-tea-id (reagent/atom nil))
 (def edit-tea (reagent/atom nil))
 (def edit-tea-snap (reagent/atom nil))
 (def show-edit (reagent/atom false))
+
+(re-frame/register-handler
+  :process-teas-response
+  (fn [app-db [_ response]]
+    (assoc-in app-db [:teas-list] response)))
+
+(re-frame/register-handler
+  :process-teas-bad-response
+  (fn [app-db [_ response]]
+    (println "ERROR: " response)
+    app-db))
+
+(re-frame/register-handler
+  :load-teas
+  (fn [app-db _]
+    (ajax/GET "/api/teas"
+              {:handler #(re-frame/dispatch [:process-teas-response %1])
+               :error-handler #(re-frame/dispatch [:process-teas-bad-response %1])
+               :response-format :json
+               :keywords? true})
+    app-db))
+
+(re-frame/register-sub
+  :teas
+  (fn [db]
+    (reaction (:teas-list @db))))
+
+(re-frame/register-handler
+  :initialize-db
+  (fn [_ _]
+    {:teas-list []}))
+
 
 (defonce app-db (reagent/atom {}))
 
@@ -114,23 +146,27 @@
 (defn tealister
   "The page component for listing tea"
   []
-  (fn []
-    (get-teas)
-    [:div.row
-     [:ul
-      [:table.table.table-striped
-       [:thead
-        [:tr
-         [:th ""]
-         [:th "Tea Name"]
-         [:th "Edit"]]]
-       [:tbody
-        (map (fn [tea] ;[tea @teas-list]
-               ^{:key tea}
-               [:tr
-                [:td [:li]]
-                [:td (second tea)]
-                [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (first tea) (second tea)))}]]]) (:teas-list @app-db))]]]]))
+  (let [teas (re-frame/subscribe [:teas])]
+    (fn []
+      [:div.row
+       [:ul
+        (map (fn [tea]
+               (println tea)
+               [:li (:name tea)]) @teas)]])))
+      ;[:ul
+        ;[:table.table.table-striped]
+        ;[:thead
+          ;[:tr]
+          ;[:th ""]
+          ;[:th "Tea Name"]
+          ;[:th "Edit"]]
+        ;[:tbody
+          ;(map (fn [tea] ;[tea @teas-list]
+                ;^{:key tea}
+                ;[:tr
+                  ;[:td [:li]]
+                  ;[:td (second tea)]
+                  ;[:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (first tea) (second tea)))}]]]) @teas)]])))
 
 (defn sync-atom-to-event
   [the-atom target-value]
@@ -232,6 +268,7 @@
 
 (defn init! []
   ;; (fetch-docs!)
-  (get-teas)
+  (re-frame/dispatch [:initialize-db])
+  (re-frame/dispatch [:load-teas])
   (hook-browser-navigation!)
   (mount-components))
