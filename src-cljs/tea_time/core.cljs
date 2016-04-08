@@ -65,7 +65,7 @@
 
 
 ;; (def teas-list (reagent/atom nil))
-(def new-tea (reagent/atom nil))
+;; (def new-tea (reagent/atom nil))
 (def edit-tea-id (reagent/atom nil))
 (def edit-tea (reagent/atom nil))
 (def edit-tea-snap (reagent/atom nil))
@@ -92,15 +92,29 @@
                :keywords? true})
     app-db))
 
+(re-frame/register-handler
+  :initialize-db
+  (fn [_ _]
+    {:teas-list []
+     :new-tea "BLAH"}))
+
+(defn new-tea-entered
+  [app-state [_ new-tea-input]]
+  (assoc-in app-state [:new-tea] new-tea-input))
+
+(re-frame/register-handler
+  :new-tea-entry
+  new-tea-entered)
+
 (re-frame/register-sub
   :teas
   (fn [db]
     (reaction (:teas-list @db))))
 
-(re-frame/register-handler
-  :initialize-db
-  (fn [_ _]
-    {:teas-list []}))
+(re-frame/register-sub
+  :new-tea
+  (fn [db]
+    (reaction (:new-tea @db))))
 
 
 (defonce app-db (reagent/atom {}))
@@ -130,7 +144,7 @@
   [tea-name]
   ;; (println "post-to-teas-db hit, params: " tea-name)
   (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json}
-             :handler (fn [] (println "New Tea Posted") (get-teas) (reset! new-tea nil))
+             :handler (fn [] (println "New Tea Posted") (get-teas))
              :error-handler (fn [err] (println "New Tea Failed To Post" err))))
 
 
@@ -175,18 +189,24 @@
                     .-target
                     .-value)))
 
-(def sync-new-tea (partial sync-atom-to-event new-tea))
+;; (def sync-new-tea (partial sync-atom-to-event new-tea))
 (def sync-edit-tea (partial sync-atom-to-event edit-tea))
+
+(defn value-event
+  [event]
+  (-> event .-target -.value))
 
 (defn tea-adder
   "A component for the tea-adder form"
   []
-  (fn []
-    [:div.row
-     [:div.col-md-12
-      [:form {:post "/api/newtea"}
-       [:input.form-control {:field :text :id :in-tea :placeholder "Name of New Tea" :value @new-tea :on-change sync-new-tea }
-        [:input.btn.btn-primary {:type "submit" :value (str "Add " @new-tea) :on-click #(post-to-teas-db @new-tea)}]]]]]))
+  (let [tmp-new-tea (re-frame/subscribe [:new-tea])]
+    (println @tmp-new-tea)
+    (fn []
+      [:div.row
+        [:div.col-md-12
+          [:form {:post "/api/newtea"}
+            [:input.form-control {:field :text :id :in-tea :placeholder "Name of New Tea" :value @tmp-new-tea :on-change #(re-frame/dispatch [:new-tea-entry (value-event %)])}]
+            [:input.btn.btn-primary {:type "submit" :value (str "Add " @tmp-new-tea) :on-click #(post-to-teas-db @tmp-new-tea)}]]]])))
 
 
 
@@ -195,8 +215,7 @@
   []
   (fn []
     [:div.form-group
-     [:div.row
-      [:div.col-md-12
+     [:div.row [:div.col-md-12
        [:button.btn.btn-info {:on-click (fn [_] (swap! show-edit not))} "Show/Hide edit form"]
        [:div.p (str "Preview: " (or @edit-tea-snap "*no tea selected*") " -> " (or @edit-tea "*no tea selected*"))]
        [:div.p]
