@@ -24,14 +24,14 @@
                  [migratus "0.8.8"]
                  [conman "0.2.7"]
                  [org.postgresql/postgresql "9.4-1203-jdbc41"]
-                 [org.clojure/clojurescript "1.7.170" :scope "provided"]
-                 [reagent "0.5.1"]
-                 [reagent-forms "0.5.13"]
-                 [reagent-utils "0.1.5"]
+                 [org.clojure/clojurescript "1.8.40" :scope "provided"]
+                 [reagent "0.6.0-alpha"]
+                 [reagent-forms "0.5.22"]
+                 [reagent-utils "0.1.7"]
                  [secretary "1.2.3"]
                  [re-frame "0.7.0"]
                  [org.clojure/core.async "0.2.374"]
-                 [cljs-ajax "0.5.1"]
+                 [cljs-ajax "0.5.4"]
                  [org.immutant/web "2.1.1" :exclusions [ch.qos.logback/logback-classic]]]
 
   :min-lein-version "2.0.0"
@@ -55,7 +55,7 @@
       :output-dir "target/cljsbuild/public/js/out"
       :externs ["react/externs/react.js"]
       :pretty-print true}}}}
-  
+
   :profiles
   {:uberjar {:omit-source true
              :env {:production true}
@@ -68,8 +68,8 @@
                  {:optimizations :advanced
                   :pretty-print false
                   :closure-warnings
-                  {:externs-validation :off :non-standard-jsdoc :off}}}}} 
-             
+                  {:externs-validation :off :non-standard-jsdoc :off}}}}}
+
              :aot :all
              :source-paths ["env/prod/clj"]}
    :dev           [:project/dev :profiles/dev]
@@ -90,8 +90,8 @@
                       {:main "tea-time.app"
                        :asset-path "/js/out"
                        :optimizations :none
-                       :source-map true}}}} 
-                  
+                       :source-map true}}}}
+
                   :figwheel
                   {:http-server-root "public"
                    :server-port 3449
@@ -99,7 +99,7 @@
                    :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"]
                    :css-dirs ["resources/public/css"]
                    :ring-handler tea-time.handler/app}
-                  
+
                   :source-paths ["env/dev/clj"]
                   :repl-options {:init-ns tea-time.core}
                   :injections [(require 'pjstadig.humane-test-output)

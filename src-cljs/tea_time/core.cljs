@@ -194,21 +194,26 @@
 
 (defn value-event
   [event]
-  (-> event .-target -.value))
+  (-> event .-target .-value))
 
 (defn tea-adder
   "A component for the tea-adder form"
   []
-  (let [tmp-new-tea (re-frame/subscribe [:new-tea])]
-    (println @tmp-new-tea)
+  (let [tmp-new-tea (re-frame/subscribe [:new-tea])
+        test-atom (reagent/atom "Testing")]
     (fn []
+      (println @tmp-new-tea)
       [:div.row
         [:div.col-md-12
-          [:form {:post "/api/newtea"}
-            [:input.form-control {:field :text :id :in-tea :placeholder "Name of New Tea" :value @tmp-new-tea :on-change #(re-frame/dispatch [:new-tea-entry (value-event %)])}]
-            [:input.btn.btn-primary {:type "submit" :value (str "Add " @tmp-new-tea) :on-click #(post-to-teas-db @tmp-new-tea)}]]]])))
+          [:input.form-control {:type "text"
+                                :placeholder "Name of New Tea"
+                                :value @tmp-new-tea
+                                :on-change #(re-frame/dispatch [:new-tea-entry (value-event %)])}]
+          [:input.btn.btn-primary {:type "button"
+                                   :value (str "Add " @tmp-new-tea)
+                                   :on-click #(println "button clicked")}]]])))
 
-
+;;(post-to-teas-db @tmp-new-tea)
 
 (defn tea-edit
   "The edit/delete form component"
