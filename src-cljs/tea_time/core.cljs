@@ -96,7 +96,7 @@
   :initialize-db
   (fn [_ _]
     {:teas-list []
-     :new-tea "BLAH"}))
+     :new-tea ""}))
 
 (defn new-tea-entered
   [app-state [_ new-tea-input]]
@@ -119,10 +119,10 @@
 
 (defonce app-db (reagent/atom {}))
 
-(defn get-teas
-  "Gets the list of all teas from the website"
-  []
-  (ajax/GET "/api/teas" :handler (fn [response] (reset! app-db (assoc-in @app-db [:teas-list] response)))))
+;(defn get-teas
+  ;"Gets the list of all teas from the website"
+  ;[]
+  ;(ajax/GET "/api/teas" :handler (fn [response] (reset! app-db (assoc-in @app-db [:teas-list] response)))))
 
  ;;(reset! app-db (assoc-in app-db [:teas-list] response))
 (defn delete-tea
@@ -130,21 +130,21 @@
   [name]
   (ajax/GET (str "/api/teas/" name "/delete")
             :error-handler (fn [response] (println "DELETE-TEA ERROR" response))
-            :handler (fn [response] (println name " deleted") (get-teas) (reset! edit-tea-snap nil))))
+            :handler (fn [response] (println name " deleted") (re-frame/dispatch [:load-teas])(reset! edit-tea-snap nil))))
 
 (defn update-tea
   "Sends an update request to the API, which updates the tea in the db"
   [id newname]
   (ajax/GET (str "/api/teas/" id "/update/" newname)
             :error-handler (fn [response] (println "UPDATE-TEA ERROR" response))
-            :handler (fn [response] (println newname " updated") (get-teas) (reset! edit-tea nil))))
+            :handler (fn [response] (println newname " updated") (reset! edit-tea nil))))
 
 (defn post-to-teas-db
   "Sends an Ajax Request to the API route to post the tea from the form to the database"
   [tea-name]
   ;; (println "post-to-teas-db hit, params: " tea-name)
   (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json}
-             :handler (fn [] (println "New Tea Posted") (get-teas))
+             :handler (fn [] (println "New Tea Posted"))
              :error-handler (fn [err] (println "New Tea Failed To Post" err))))
 
 
