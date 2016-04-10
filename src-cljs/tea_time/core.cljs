@@ -74,6 +74,7 @@
 (re-frame/register-handler
   :process-teas-response
   (fn [app-db [_ response]]
+    (println response)
     (assoc-in app-db [:teas-list] response)))
 
 (re-frame/register-handler
@@ -163,24 +164,17 @@
   (let [teas (re-frame/subscribe [:teas])]
     (fn []
       [:div.row
-       [:ul
-        (map (fn [tea]
-               (println tea)
-               [:li (:name tea)]) @teas)]])))
-      ;[:ul
-        ;[:table.table.table-striped]
-        ;[:thead
-          ;[:tr]
-          ;[:th ""]
-          ;[:th "Tea Name"]
-          ;[:th "Edit"]]
-        ;[:tbody
-          ;(map (fn [tea] ;[tea @teas-list]
-                ;^{:key tea}
-                ;[:tr
-                  ;[:td [:li]]
-                  ;[:td (second tea)]
-                  ;[:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (first tea) (second tea)))}]]]) @teas)]])))
+        [:table.table.table-striped
+          [:thead
+            [:tr
+              [:th "Tea Name"]]]
+          [:tbody
+            (map (fn [tea]
+                    ^{:key tea}
+                    [:tr
+                      [:td.pull-left (:name tea)]
+                      [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (:id tea) (:name tea)))}]]])
+              @teas)]]])))
 
 (defn sync-atom-to-event
   [the-atom target-value]
@@ -232,6 +226,10 @@
                                                                                   (reset! edit-tea nil)
                                                                                   (reset! edit-tea-snap nil))}]]
        [:input.btn.btn-danger {:type "button" :value (str "Delete " @edit-tea-snap) :on-click #(delete-tea @edit-tea)}]]]]))
+
+;; tea-edit can be re-written so that it will look like the tea is being
+;; modified in place on the DOM -- as a sort of preview -- then once the
+;; update button is clicked, the result can be sent to the db.
 
 ;; this passes the value of the new tea atom into the post-to-teas-db function
 
