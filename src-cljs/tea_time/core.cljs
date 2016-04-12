@@ -107,6 +107,11 @@
   :new-tea-entry
   new-tea-entered)
 
+(re-frame/register-handler
+  :replace-tea
+  (fn [app-state [_ replaced-by edit-tea-input]]
+    (assoc-in app-state [:teas-list] (replace {replaced-by edit-tea-input} (:teas-list @app-state)))))
+
 (re-frame/register-sub
   :teas
   (fn [db]
@@ -157,6 +162,37 @@
   (reset! edit-tea (second name))
   (reset! edit-tea-snap (second name)))
 
+(defn value-event
+  [event]
+  (-> event .-target .-value))
+
+
+(defn edit-tea-form
+  [tea edit?]
+  (let [edit-tea (reagent/atom (:name tea))]
+    (fn [tea]
+      [:form.form-control {:type "text"
+                           :value @edit-tea
+                           :on-change #(reset! edit-tea (value-event %))}
+       [:button.btn.btn-success {:value "Finalize"
+                                 :on-click (fn [e]
+                                             (re-frame/dispatch [:replace-tea tea @edit-tea])
+                                             (swap! edit? not))}]])))
+(defn display-tea
+  [tea]
+  (fn [tea]
+    (:name tea)))
+
+(defn tea-edit-toggler
+  [tea]
+  (let [edit? (reagent/atom false)]
+    (fn [tea]
+      ^{:key tea}
+      (if @edit?
+        [:tr
+          [:td.pull-left (edit-tea-form tea edit?)]]
+        [:tr
+          [:td.pull-left {:on-click #(swap! edit? not)} (display-tea tea)]]))))
 
 (defn tealister
   "The page component for listing tea"
@@ -169,12 +205,15 @@
             [:tr
               [:th "Tea Name"]]]
           [:tbody
-            (map (fn [tea]
-                    ^{:key tea}
-                    [:tr
-                      [:td.pull-left (:name tea)]
-                      [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (:id tea) (:name tea)))}]]])
-              @teas)]]])))
+            (map tea-edit-toggler @teas)]]])))
+
+              ;(fn [tea
+                    ;^{:key tea}
+                    ;[:tr
+                      ;[:td.pull-left (tea-edit-toggler tea)]]])
+                      ;; [:td [:input.btn.btn-success {:type "button" :value "Edit" :on-click (fn [_] (update-edit-form (:id tea) (:name tea)))}]]])
+              ;@teas)]]])))
+
 
 (defn sync-atom-to-event
   [the-atom target-value]
@@ -185,10 +224,6 @@
 
 ;; (def sync-new-tea (partial sync-atom-to-event new-tea))
 (def sync-edit-tea (partial sync-atom-to-event edit-tea))
-
-(defn value-event
-  [event]
-  (-> event .-target .-value))
 
 (defn tea-adder
   "A component for the tea-adder form"
