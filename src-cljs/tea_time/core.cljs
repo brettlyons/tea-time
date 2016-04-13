@@ -94,6 +94,20 @@
     app-db))
 
 (re-frame/register-handler
+  :delete-tea
+  (fn [app-db [_ id]]
+    (ajax/GET (str "/api/teas/" id "/delete")
+              :error-handler (fn [response] (println "DELETE-TEA ERROR" response))
+              :handler (fn [response] (println name " deleted") (re-frame/dispatch [:load-teas])(reset! edit-tea-snap nil)))))
+
+
+(re-frame/register-handler
+  :process-delete
+  (fn [app-db [_ response]]
+    (re-frame/dispatch [:load-teas])
+    app-db))
+
+(re-frame/register-handler
   :initialize-db
   (fn [_ _]
     {:teas-list []
