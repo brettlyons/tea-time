@@ -124,7 +124,7 @@
 (re-frame/register-handler
   :replace-tea
   (fn [app-state [_ replaced-by edit-tea-input]]
-    (assoc-in app-state [:teas-list] (replace {replaced-by edit-tea-input} (:teas-list @app-state)))))
+    (assoc-in app-state [:teas-list] (replace {replaced-by edit-tea-input} (:teas-list app-state)))))
 
 (re-frame/register-sub
   :teas
@@ -185,28 +185,24 @@
   [tea edit?]
   (let [edit-tea (reagent/atom (:name tea))]
     (fn [tea]
-      [:form.form-control {:type "text"
-                           :value @edit-tea
-                           :on-change #(reset! edit-tea (value-event %))}
-       [:button.btn.btn-success {:value "Finalize"
-                                 :on-click (fn [e]
-                                             (re-frame/dispatch [:replace-tea tea @edit-tea])
-                                             (swap! edit? not))}]])))
-(defn display-tea
-  [tea]
-  (fn [tea]
-    (:name tea)))
+      [:form.pull-left {:type "text"
+                        :value @edit-tea
+                        :on-change #(reset! edit-tea (value-event %))}]
+      [:button.btn.btn-success.pull-right {:on-click (fn [e]
+                                                      (re-frame/dispatch
+                                                        [:replace-tea tea @edit-tea])
+                                                      (swap! edit? not))}
+       "Finalize"])))
 
 (defn tea-edit-toggler
   [tea]
   (let [edit? (reagent/atom false)]
     (fn [tea]
-      ^{:key tea}
       (if @edit?
         [:tr
-          [:td.pull-left (edit-tea-form tea edit?)]]
+          [:td.pull-right [edit-tea-form tea edit?]]]
         [:tr
-          [:td.pull-left {:on-click #(swap! edit? not)} (display-tea tea)]]))))
+          [:td.pull-left {:on-click #(swap! edit? not)} (:name tea)]]))))
 
 (defn tealister
   "The page component for listing tea"
@@ -219,7 +215,9 @@
             [:tr
               [:th "Tea Name"]]]
           [:tbody
-            (map tea-edit-toggler @teas)]]])))
+            (for [tea @teas]
+              ^{:key tea}
+              [tea-edit-toggler tea])]]])))
 
               ;(fn [tea
                     ;^{:key tea}
