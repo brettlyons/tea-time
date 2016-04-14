@@ -168,6 +168,7 @@
   ;(ajax/GET "/api/teas" :handler (fn [response] (reset! app-db (assoc-in @app-db [:teas-list] response)))))
 
  ;;(reset! app-db (assoc-in app-db [:teas-list] response))
+
 (defn delete-tea
   "Sends a get request that deletes the tea argument"
   [name]
@@ -268,23 +269,23 @@
 
 ;;(post-to-teas-db @tmp-new-tea)
 
-(defn tea-edit
-  "The edit/delete form component"
-  []
-  (fn []
-    [:div.form-group
-     [:div.row [:div.col-md-12]
-       [:button.btn.btn-info {:on-click (fn [_] (swap! show-edit not))} "Show/Hide edit form"]
-       [:div.p (str "Preview: " (or @edit-tea-snap "*no tea selected*") " -> " (or @edit-tea "*no tea selected*"))]
-       [:div.p]
-       [:form {:style {:visibility (if @show-edit
-                                     "visible"
-                                     "hidden")}}
-        [:input.form-control {:field :text :id :change-tea :value @edit-tea :on-change sync-edit-tea
-        ; [:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea @edit-tea-id @edit-tea)
-                                                                                  (reset! edit-tea nil)
-                                                                                  (reset! edit-tea-snap nil)}]]
-       [:input.btn.btn-danger {:type "button" :value (str "Delete " @edit-tea-snap) :on-click #(delete-tea @edit-tea)}]]]))
+;(defn tea-edit
+  ;"The edit/delete form component"
+  ;[]
+  ;(fn []
+    ;[:div.form-group
+     ;[:div.row [:div.col-md-12]
+       ;[:button.btn.btn-info {:on-click (fn [_] (swap! show-edit not))} "Show/Hide edit form"]
+       ;[:div.p (str "Preview: " (or @edit-tea-snap "*no tea selected*") " -> " (or @edit-tea "*no tea selected*"))]
+       ;[:div.p]
+       ;[:form {:style {:visibility (if @show-edit
+                                     ;"visible"
+                                     ;"hidden")}}
+        ;[:input.form-control {:field :text :id :change-tea :value @edit-tea :on-change sync-edit-tea
+         ;[:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea @edit-tea-id @edit-tea))}]
+                                                                                  ;(reset! edit-tea nil)
+                                                                                  ;(reset! edit-tea-snap nil)}]]
+       ;[:input.btn.btn-danger {:type "button" :value (str "Delete " @edit-tea-snap) :on-click #(delete-tea @edit-tea)}]]]))
 
 ;; tea-edit can be re-written so that it will look like the tea is being
 ;; modified in place on the DOM -- as a sort of preview -- then once the
@@ -298,11 +299,10 @@
     [:div.col-md-12
      "Here is a list of teas"]]
    [:div.row
-    [:div.col-md-8
-     [tealister]]
-    [:div.col-md-4
-     [tea-edit]
-     [tea-adder]]]])
+    [:div.col-xs-6
+     [tealister]
+     [tea-adder]]
+    [:div.col-xs-6]]])
 
 
 (def pages
