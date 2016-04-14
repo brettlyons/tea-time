@@ -98,7 +98,26 @@
   (fn [app-db [_ id]]
     (ajax/GET (str "/api/teas/" id "/delete")
               :error-handler (fn [response] (println "DELETE-TEA ERROR" response))
-              :handler (fn [response] (println name " deleted") (re-frame/dispatch [:load-teas])(reset! edit-tea-snap nil)))))
+              :handler #(re-frame/dispatch [:process-delete]))
+    app-db))
+
+;(re-frame/register-handler
+  ;:update-tea
+  ;(fn [app-db [_ id new-name]]
+    ;(.setTimeout js/window #(ajax/GET (str "/api/teas/" id "/update/" new-name)
+                                  ;:error-handler (fn [response]
+                                                  ;(println "UPDATE-TEA ERROR" response))
+                                  ;:handler (fn [response] (println response))) 4000)
+    ;app-db))
+
+(re-frame/register-handler
+  :update-tea
+  (fn [app-db [_ id new-name]]
+    (ajax/GET (str "/api/teas/" id "/update/" new-name)
+      :error-handler (fn [response]
+                      (println "UPDATE-TEA ERROR" response))
+      :handler (fn [response] (println response)))
+    app-db))
 
 
 (re-frame/register-handler
@@ -124,7 +143,11 @@
 (re-frame/register-handler
   :replace-tea
   (fn [app-state [_ replaced-by edit-tea-input]]
-    (assoc-in app-state [:teas-list] (replace {replaced-by edit-tea-input} (:teas-list app-state)))))
+    (re-frame/dispatch [:update-tea (:id replaced-by) edit-tea-input])
+    (assoc-in app-state [:teas-list] (replace {replaced-by
+                                               {:id (:id replaced-by)
+                                                :name edit-tea-input}}
+                                      (:teas-list app-state)))))
 
 (re-frame/register-sub
   :teas
@@ -152,13 +175,6 @@
             :error-handler (fn [response] (println "DELETE-TEA ERROR" response))
             :handler (fn [response] (println name " deleted") (re-frame/dispatch [:load-teas])(reset! edit-tea-snap nil))))
 
-(defn update-tea
-  "Sends an update request to the API, which updates the tea in the db"
-  [id newname]
-  (ajax/GET (str "/api/teas/" id "/update/" newname)
-            :error-handler (fn [response] (println "UPDATE-TEA ERROR" response))
-            :handler (fn [response] (println newname " updated") (reset! edit-tea nil))))
-
 (defn post-to-teas-db
   "Sends an Ajax Request to the API route to post the tea from the form to the database"
   [tea-name]
@@ -180,27 +196,23 @@
   [event]
   (-> event .-target .-value))
 
-
-(defn edit-tea-form
-  [tea edit?]
-  (let [edit-tea (reagent/atom (:name tea))]
-    (fn [tea]
-      [:form.pull-left {:type "text"
-                        :value @edit-tea
-                        :on-change #(reset! edit-tea (value-event %))}]
-      [:button.btn.btn-success.pull-right {:on-click (fn [e]
-                                                      (re-frame/dispatch
-                                                        [:replace-tea tea @edit-tea])
-                                                      (swap! edit? not))}
-       "Finalize"])))
-
 (defn tea-edit-toggler
   [tea]
-  (let [edit? (reagent/atom false)]
+  (let [edit? (reagent/atom false)
+        tmp-edit (reagent/atom (:name tea))]
     (fn [tea]
       (if @edit?
         [:tr
-          [:td.pull-right [edit-tea-form tea edit?]]]
+          [:td
+            [:input.form-control {:type "text"
+                                  :value @tmp-edit
+                                  :on-change #(reset! tmp-edit (value-event %))}]
+            [:button.btn.btn-success.pull-right
+              {:on-click (fn [e]
+                          (re-frame/dispatch
+                            [:replace-tea tea @tmp-edit])
+                          (swap! edit? not))}
+              "Finalize"]]]
         [:tr
           [:td.pull-left {:on-click #(swap! edit? not)} (:name tea)]]))))
 
@@ -261,18 +273,18 @@
   []
   (fn []
     [:div.form-group
-     [:div.row [:div.col-md-12
+     [:div.row [:div.col-md-12]
        [:button.btn.btn-info {:on-click (fn [_] (swap! show-edit not))} "Show/Hide edit form"]
        [:div.p (str "Preview: " (or @edit-tea-snap "*no tea selected*") " -> " (or @edit-tea "*no tea selected*"))]
        [:div.p]
        [:form {:style {:visibility (if @show-edit
                                      "visible"
                                      "hidden")}}
-        [:input.form-control {:field :text :id :change-tea :value @edit-tea :on-change sync-edit-tea }]
-        [:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea @edit-tea-id @edit-tea)
+        [:input.form-control {:field :text :id :change-tea :value @edit-tea :on-change sync-edit-tea
+        ; [:input.btn.btn-info {:type "submit" :value "Update Tea Name" :on-click #((update-tea @edit-tea-id @edit-tea)
                                                                                   (reset! edit-tea nil)
-                                                                                  (reset! edit-tea-snap nil))}]]
-       [:input.btn.btn-danger {:type "button" :value (str "Delete " @edit-tea-snap) :on-click #(delete-tea @edit-tea)}]]]]))
+                                                                                  (reset! edit-tea-snap nil)}]]
+       [:input.btn.btn-danger {:type "button" :value (str "Delete " @edit-tea-snap) :on-click #(delete-tea @edit-tea)}]]]))
 
 ;; tea-edit can be re-written so that it will look like the tea is being
 ;; modified in place on the DOM -- as a sort of preview -- then once the
@@ -285,10 +297,10 @@
    [:div.row
     [:div.col-md-12
      "Here is a list of teas"]]
-   [:div.row {:style {:display "flex" :align-items "flex-end"}}
-    [:div.col-md-6
+   [:div.row
+    [:div.col-md-8
      [tealister]]
-    [:div.col-md-6
+    [:div.col-md-4
      [tea-edit]
      [tea-adder]]]])
 
