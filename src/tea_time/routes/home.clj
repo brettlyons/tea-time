@@ -45,7 +45,7 @@
        (db/update-tea! {:id (Integer/parseInt id) :newname newname})
        (ok (str newname " modified")))
   (GET "/api/teas" []
-        :return :json 
+        :return :json
         :query-params []
         :summary "The list of teas from the db"
         (ok (db/get-teas-name)))

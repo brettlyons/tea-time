@@ -42,13 +42,11 @@
           [nav-link "#/list-page" "List Of Teas Page" :special-page collapsed?]
           [nav-link "#/about" "About" :about collapsed?]]]]])))
 
-
 (defn about-page []
   [:div.container
    [:div.row
     [:div.col-md-12
      "Tea Time is a simple web page to display tea, and tea ingredients"]]])
-
 
 (defn home-page []
   [:div.container
@@ -87,21 +85,31 @@
 
 (re-frame/register-handler
   :delete-tea
+  (fn [db [_ tea-name]]
+    (ajax/GET (str "/api/teas/" tea-name "/delete")
+              :error-handler (fn [response]
+                               (println "DELETE-TEA ERROR" response))
+              :handler (fn [response]
+                         (println tea-name " deleted.")
+                         (re-frame/dispatch [:load-teas])))))
+
+(re-frame/register-handler
+  :delete-tea
   (fn [app-db [_ id]]
     (ajax/GET (str "/api/teas/" id "/delete")
               :error-handler (fn [response] (println "DELETE-TEA ERROR " response))
               :handler #(re-frame/dispatch [:process-delete]))
     app-db))
 
-;; -- SAVE FOR TESTING ASYNC DOM UPDATE --
+; -- SAVE FOR TESTING ASYNC DOM UPDATE --
 ;(re-frame/register-handler
-;:update-tea
-;(fn [app-db [_ id new-name]]
-;(.setTimeout js/window #(ajax/GET (str "/api/teas/" id "/update/" new-name)
-;:error-handler (fn [response]
-;(println "UPDATE-TEA ERROR" response))
-;:handler (fn [response] (println response))) 4000)
-;app-db))
+;  :update-tea
+;  (fn [app-db [_ id new-name]]
+;    (.setTimeout js/window #(ajax/GET (str "/api/teas/" id "/update/" new-name)
+;                                      :error-handler (fn [response]
+;                                                       (println "UPDATE-TEA ERROR" response))
+;                                      :handler (fn [response] (println response))) 4000)
+;    app-db)
 
 (re-frame/register-handler
   :update-tea
@@ -152,19 +160,11 @@
   (fn [db]
     (reaction (:new-tea @db))))
 
-
-;; These two fn's need to be put into re-frame handlers.
-(defn delete-tea
-  "Sends a get request that deletes the tea argument"
-  [name]
-  (ajax/GET (str "/api/teas/" name "/delete")
-            :error-handler (fn [response] (println "DELETE-TEA ERROR" response))
-            :handler (fn [response] (println name " deleted") (re-frame/dispatch [:load-teas]))))
+;; This fn needs to be put into re-frame handlers.
 
 (defn post-to-teas-db
   "Sends an Ajax Request to the API route to post the tea from the form to the database"
   [tea-name]
-  ;; (println "post-to-teas-db hit, params: " tea-name)
   (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json}
              :handler (fn [] (println "New Tea Posted"))
              :error-handler (fn [err] (println "New Tea Failed To Post" err))))
@@ -184,12 +184,18 @@
           [:input.form-control {:type "text"
                                 :value @tmp-edit
                                 :on-change #(reset! tmp-edit (value-event %))}]
+          [:div.row {:style {:margin-bottom "15px"}}]
           [:button.btn.btn-success.pull-right
            {:on-click (fn [e]
                         (re-frame/dispatch
                           [:replace-tea tea @tmp-edit])
                         (swap! edit? not))}
-           "Finalize"]]]
+           "Update"]
+          [:button.btn.btn-danger.pull-right
+           {:on-click (fn [e]
+                        (re-frame/dispatch [:delete-tea (:name tea)]))
+            :style {:margin-right "10px"}}
+           "Delete"]]]
         [:tr
          [:td.pull-left {:on-click #(swap! edit? not)} (:name tea)]]))))
 
