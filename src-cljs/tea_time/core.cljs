@@ -191,7 +191,8 @@
             :style {:margin-right "10px"}}
            "Delete"]]]
         [:tr {:on-click #(swap! edit? not)}
-         [:td.pull-left (:name tea)]]))))
+          [:td.pull-left
+           [:a (:name tea)]]]))))
 
 (defn tealister
   "The page component for listing tea"
