@@ -64,7 +64,6 @@
 (re-frame/register-handler
   :process-teas-response
   (fn [app-db [_ response]]
-    (println response)
     (assoc-in app-db [:teas-list] response)))
 
 (re-frame/register-handler
@@ -90,7 +89,6 @@
               :error-handler (fn [response]
                                (println "DELETE-TEA ERROR" response))
               :handler (fn [response]
-                         (println tea-name " deleted.")
                          (re-frame/dispatch [:load-teas])))))
 
 (re-frame/register-handler
@@ -117,7 +115,7 @@
     (ajax/GET (str "/api/teas/" id "/update/" new-name)
               :error-handler (fn [response]
                                (println "UPDATE-TEA ERROR " response))
-              :handler (fn [response] (println response)))
+              :handler (fn [response] (re-frame/dispatch [:load-teas])))
     app-db))
 
 
@@ -130,16 +128,7 @@
 (re-frame/register-handler
   :initialize-db
   (fn [_ _]
-    {:teas-list []
-     :new-tea ""}))
-
-(defn new-tea-entered
-  [app-state [_ new-tea-input]]
-  (assoc-in app-state [:new-tea] new-tea-input))
-
-(re-frame/register-handler
-  :new-tea-entry
-  new-tea-entered)
+    {:teas-list []}))
 
 (re-frame/register-handler
   :replace-tea
@@ -160,14 +149,19 @@
   (fn [db]
     (reaction (:new-tea @db))))
 
-;; This fn needs to be put into re-frame handlers.
+(re-frame/register-handler
+  :tea-posted
+  (fn [app-state]
+    (re-frame/dispatch [:load-teas])))
 
-(defn post-to-teas-db
-  "Sends an Ajax Request to the API route to post the tea from the form to the database"
-  [tea-name]
-  (ajax/POST "/api/newtea" {:params {:new-tea tea-name} :format :json}
-             :handler (fn [] (println "New Tea Posted"))
-             :error-handler (fn [err] (println "New Tea Failed To Post" err))))
+(re-frame/register-handler
+  :create-tea
+  (fn [app-state [_ tea-name]]
+    (ajax/POST "/api/newtea" {:params {:new-tea tea-name}
+                              :format :json
+                              :handler #(re-frame/dispatch [:tea-posted])
+                              :error-handler (fn [err] (println "New Tea Failed To Post" err))})
+    app-state))
 
 (defn value-event
   [event]
@@ -196,8 +190,8 @@
                         (re-frame/dispatch [:delete-tea (:name tea)]))
             :style {:margin-right "10px"}}
            "Delete"]]]
-        [:tr
-         [:td.pull-left {:on-click #(swap! edit? not)} (:name tea)]]))))
+        [:tr {:on-click #(swap! edit? not)}
+         [:td.pull-left (:name tea)]]))))
 
 (defn tealister
   "The page component for listing tea"
@@ -217,19 +211,17 @@
 (defn tea-adder
   "A component for the tea-adder form"
   []
-  (let [tmp-new-tea (re-frame/subscribe [:new-tea])
-        test-atom (reagent/atom "Testing")]
+  (let [tmp-new-tea (reagent/atom "")]
     (fn []
-      (println @tmp-new-tea)
       [:div.row
        [:div.col-md-12
         [:input.form-control {:type "text"
                               :placeholder "Name of New Tea"
                               :value @tmp-new-tea
-                              :on-change #(re-frame/dispatch [:new-tea-entry (value-event %)])}]
-        [:input.btn.btn-primary {:type "button"
-                                 :value (str "Add " @tmp-new-tea)
-                                 :on-click #(println "button clicked")}]]])))
+                              :on-change #(reset! tmp-new-tea (value-event %))}]
+        [:button.btn.btn-primary.pull-right {:style {:margin-top "10px"}
+                                             :on-click #(re-frame/dispatch [:create-tea @tmp-new-tea]
+                                                                           (reset! tmp-new-tea ""))} (str "Add " @tmp-new-tea)]]])))
 
 (defn list-page []
   [:div.container
