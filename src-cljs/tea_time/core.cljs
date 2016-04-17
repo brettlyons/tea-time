@@ -11,56 +11,6 @@
   (:import goog.History))
 
 
-(defn nav-link [uri title page collapsed?]
-  [:li {:class (when (= page (session/get :page)) "active")}
-   [:a {:href uri
-        :on-click #(reset! collapsed? true)}
-    title]])
-
-
-(defn navbar []
-  (let [collapsed? (atom true)]
-    (fn []
-      [:nav.navbar.navbar-inverse.navbar-fixed-top
-       [:div.container
-        [:div.navbar-header
-         [:button.navbar-toggle
-          {:class         (when-not @collapsed? "collapsed")
-           :data-toggle   "collapse"
-           :aria-expanded @collapsed?
-           :aria-controls "navbar"
-           :on-click      #(swap! collapsed? not)}
-          [:span.sr-only "Toggle Navigation"]
-          [:span.icon-bar]
-          [:span.icon-bar]
-          [:span.icon-bar]]
-         [:a.navbar-brand {:href "#/"} "Tea Time"]]
-        [:div.navbar-collapse.collapse
-         (when-not @collapsed? {:class "in"})
-         [:ul.nav.navbar-nav
-          [nav-link "#/" "Home" :home collapsed?]
-          [nav-link "#/list-page" "List Of Teas Page" :special-page collapsed?]
-          [nav-link "#/about" "About" :about collapsed?]]]]])))
-
-(defn about-page []
-  [:div.container
-   [:div.row
-    [:div.col-md-12
-     "Tea Time is a simple web page to display tea, and tea ingredients"]]])
-
-(defn home-page []
-  [:div.container
-   [:div.jumbotron
-    [:h1 "Welcome to Tea Time"]]
-   [:div.row
-    [:div.col-md-12
-     [:h2 "Welcome to Tea Time"]]]
-   (when-let [docs (session/get :docs)]
-     [:div.row
-      [:div.col-md-12
-       [:div {:dangerouslySetInnerHTML
-              {:__html (md->html docs)}}]]])])
-
 (re-frame/register-handler
   :process-teas-response
   (fn [app-db [_ response]]
@@ -166,6 +116,55 @@
 (defn value-event
   [event]
   (-> event .-target .-value))
+
+(defn nav-link [uri title page collapsed?]
+  [:li {:class (when (= page (session/get :page)) "active")}
+   [:a {:href uri
+        :on-click #(reset! collapsed? true)}
+    title]])
+
+(defn navbar []
+  (let [collapsed? (atom true)]
+    (fn []
+      [:nav.navbar.navbar-inverse.navbar-fixed-top
+       [:div.container
+        [:div.navbar-header
+         [:button.navbar-toggle
+          {:class         (when-not @collapsed? "collapsed")
+           :data-toggle   "collapse"
+           :aria-expanded @collapsed?
+           :aria-controls "navbar"
+           :on-click      #(swap! collapsed? not)}
+          [:span.sr-only "Toggle Navigation"]
+          [:span.icon-bar]
+          [:span.icon-bar]
+          [:span.icon-bar]]
+         [:a.navbar-brand {:href "#/"} "Tea Time"]]
+        [:div.navbar-collapse.collapse
+         (when-not @collapsed? {:class "in"})
+         [:ul.nav.navbar-nav
+          [nav-link "#/" "Home" :home collapsed?]
+          [nav-link "#/list-page" "List Of Teas Page" :special-page collapsed?]
+          [nav-link "#/about" "About" :about collapsed?]]]]])))
+
+(defn about-page []
+  [:div.container
+   [:div.row
+    [:div.col-md-12
+     "Tea Time is a simple web page to display tea, and tea ingredients"]]])
+
+(defn home-page []
+  [:div.container
+   [:div.jumbotron
+    [:h1 "Welcome to Tea Time"]]
+   [:div.row
+    [:div.col-md-12
+     [:h2 "Welcome to Tea Time"]]]
+   (when-let [docs (session/get :docs)]
+     [:div.row
+      [:div.col-md-12
+       [:div {:dangerouslySetInnerHTML
+              {:__html (md->html docs)}}]]])])
 
 (defn tea-edit-toggler
   [tea]
