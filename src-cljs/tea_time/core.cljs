@@ -10,6 +10,7 @@
   (:require-macros [reagent.ratom :refer [reaction]])
   (:import goog.History))
 
+;; -- Re-Frame handlers/subcriptions AKA Update
 
 (re-frame/register-handler
   :process-teas-response
@@ -116,6 +117,8 @@
 (defn value-event
   [event]
   (-> event .-target .-value))
+
+;; -- VIEW portion, with some view logic as well
 
 (defn nav-link [uri title page collapsed?]
   [:li {:class (when (= page (session/get :page)) "active")}
@@ -234,6 +237,7 @@
      [tea-adder]]
     [:div.col-xs-6]]])
 
+;; -- Routes, etc.
 
 (def pages
   {:home #'home-page
