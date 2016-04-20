@@ -79,6 +79,7 @@
 (re-frame/register-handler
   :initialize-db
   (fn [_ _]
+    (re-frame/dispatch [:load-teas])
     {:teas-list []}))
 
 (re-frame/register-handler
@@ -284,6 +285,5 @@
 (defn init! []
   ;; (fetch-docs!)
   (re-frame/dispatch [:initialize-db])
-  (re-frame/dispatch [:load-teas])
   (hook-browser-navigation!)
   (mount-components))
